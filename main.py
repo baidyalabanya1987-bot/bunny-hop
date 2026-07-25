@@ -1,8 +1,15 @@
 def on_button_pressed():
-    pass
+    if bunny.y >= 80:
+        bunny.vy = -200
 controller.any_button.on_event(ControllerButtonEvent.PRESSED, on_button_pressed)
 
-projectile: Sprite = None
+def on_on_overlap(sprite, otherSprite):
+    game.game_over(False)
+sprites.on_overlap(SpriteKind.player, SpriteKind.projectile, on_on_overlap)
+
+log: Sprite = None
+log_speed = 0
+bunny: Sprite = None
 scene.set_background_color(13)
 bunny = sprites.create(img("""
         . . 1 1 . . . . 1 1 . . . . . .
@@ -25,9 +32,18 @@ bunny = sprites.create(img("""
     SpriteKind.player)
 bunny.set_position(10, 80)
 
+def on_on_update():
+    if bunny.y < 80:
+        bunny.ay = 300
+    else:
+        bunny.ay = 0
+        bunny.vy = 0
+game.on_update(on_on_update)
+
 def on_update_interval():
-    global projectile
-    projectile = sprites.create_projectile_from_side(img("""
+    global log_speed, log
+    log_speed = -100 - game.runtime() / 250
+    log = sprites.create_projectile_from_side(img("""
             ........................
             ..........bbbb..........
             ........bbddddbb........
@@ -53,7 +69,8 @@ def on_update_interval():
             ......ee77eeee77ecee....
             ......ee6eeeeee6eef.....
             """),
-        -100,
+        log_speed,
         0)
-    projectile.y = 80
+    log.y = 80
+    info.change_score_by(10)
 game.on_update_interval(2000, on_update_interval)
